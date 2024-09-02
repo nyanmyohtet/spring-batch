@@ -1,0 +1,25 @@
+services:
+  database:
+    image: mysql:8.4.2
+    container_name: mysql-db
+    environment:
+      MYSQL_DATABASE: "spring-batch"
+      MYSQL_USER: "user"
+      MYSQL_PASSWORD: "secret"
+      MYSQL_ROOT_PASSWORD: "root"
+    ports:
+      - 3306:3306
+    volumes:
+      - ./mysql/custom.cnf:/etc/mysql/conf.d/custom.cnf
+      - spring-batch-db-volume:/var/lib/mysql
+    networks:
+      - app-network
+
+# Docker Volumes
+volumes:
+  spring-batch-db-volume:
+
+# Docker Networks
+networks:
+  app-network:
+    driver: bridge
