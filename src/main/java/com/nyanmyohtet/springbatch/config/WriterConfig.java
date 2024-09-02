@@ -1,6 +1,6 @@
 package com.nyanmyohtet.springbatch.config;
 
-import com.nyanmyohtet.springbatch.persistence.model.TransactionRecord;
+import com.nyanmyohtet.springbatch.persistence.model.Transaction;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,10 +12,10 @@ import java.util.List;
 public class WriterConfig {
 
     @Bean
-    public ItemWriter<TransactionRecord> writer(JpaRepository<TransactionRecord, Long> repository) {
+    public ItemWriter<Transaction> writer(JpaRepository<Transaction, Long> repository) {
         return new ItemWriter<>() {
             @Override
-            public void write(List<? extends TransactionRecord> items) {
+            public void write(List<? extends Transaction> items) {
                 items.forEach(System.out::println);
                 repository.saveAll(items);
             }

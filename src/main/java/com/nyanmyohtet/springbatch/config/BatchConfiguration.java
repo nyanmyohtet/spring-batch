@@ -1,7 +1,7 @@
 package com.nyanmyohtet.springbatch.config;
 
 import com.nyanmyohtet.springbatch.component.TransactionRecordFieldSetMapper;
-import com.nyanmyohtet.springbatch.persistence.model.TransactionRecord;
+import com.nyanmyohtet.springbatch.persistence.model.Transaction;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
 import org.springframework.context.annotation.Bean;
@@ -11,8 +11,8 @@ import org.springframework.core.io.ClassPathResource;
 @Configuration
 public class BatchConfiguration {
     @Bean
-    public FlatFileItemReader<TransactionRecord> reader() {
-        return new FlatFileItemReaderBuilder<TransactionRecord>()
+    public FlatFileItemReader<Transaction> reader() {
+        return new FlatFileItemReaderBuilder<Transaction>()
                 .name("transactionItemReader")
                 .resource(new ClassPathResource("transactions.txt"))
                 .linesToSkip(1) // skip header

@@ -1,7 +1,7 @@
 package com.nyanmyohtet.springbatch.config;
 
 import com.nyanmyohtet.springbatch.component.TransactionItemProcessor;
-import com.nyanmyohtet.springbatch.persistence.model.TransactionRecord;
+import com.nyanmyohtet.springbatch.persistence.model.Transaction;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
@@ -24,13 +24,13 @@ public class BatchJobConfig {
     private StepBuilderFactory stepBuilderFactory;
 
     @Autowired
-    private FlatFileItemReader<TransactionRecord> reader;
+    private FlatFileItemReader<Transaction> reader;
 
     @Autowired
     private TransactionItemProcessor processor;
 
     @Autowired
-    private ItemWriter<TransactionRecord> writer;
+    private ItemWriter<Transaction> writer;
 
     @Bean
     public Job importTransactionJob() {
@@ -42,7 +42,7 @@ public class BatchJobConfig {
     @Bean
     public Step step1() {
         return stepBuilderFactory.get("step1")
-                .<TransactionRecord, TransactionRecord>chunk(10)
+                .<Transaction, Transaction>chunk(10)
                 .reader(reader)
                 .processor(processor)
                 .writer(writer)

@@ -1,6 +1,6 @@
 package com.nyanmyohtet.springbatch.component;
 
-import com.nyanmyohtet.springbatch.persistence.model.TransactionRecord;
+import com.nyanmyohtet.springbatch.persistence.model.Transaction;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.stereotype.Component;
 
@@ -9,13 +9,13 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 @Component
-public class TransactionItemProcessor implements ItemProcessor<TransactionRecord, TransactionRecord> {
+public class TransactionItemProcessor implements ItemProcessor<Transaction, Transaction> {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     @Override
-    public TransactionRecord process(TransactionRecord item) throws Exception {
+    public Transaction process(Transaction item) throws Exception {
         item.setTrxDate(LocalDate.parse(item.getTrxDate().toString(), DATE_FORMATTER));
         item.setTrxTime(LocalTime.parse(item.getTrxTime().toString(), TIME_FORMATTER));
         return item;

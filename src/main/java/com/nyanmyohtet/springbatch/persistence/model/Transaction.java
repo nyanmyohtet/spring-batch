@@ -15,7 +15,7 @@ import java.time.LocalTime;
 @Setter
 @ToString
 @Entity
-public class TransactionRecord {
+public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
