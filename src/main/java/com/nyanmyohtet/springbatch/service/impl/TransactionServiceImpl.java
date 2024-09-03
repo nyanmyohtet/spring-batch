@@ -3,6 +3,7 @@ package com.nyanmyohtet.springbatch.service.impl;
 import com.nyanmyohtet.springbatch.api.rest.TransactionRestController;
 import com.nyanmyohtet.springbatch.api.rest.request.UpdateDescriptionRequest;
 import com.nyanmyohtet.springbatch.api.rest.response.SearchTransactionResponse;
+import com.nyanmyohtet.springbatch.exception.ResourceNotFoundException;
 import com.nyanmyohtet.springbatch.persistence.model.Transaction;
 import com.nyanmyohtet.springbatch.persistence.repository.TransactionRepository;
 import com.nyanmyohtet.springbatch.service.TransactionService;
@@ -19,6 +20,7 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.OptimisticLockException;
 import javax.transaction.Transactional;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Optional;
 
@@ -71,20 +73,27 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     @Transactional
     public Transaction updateDescription(Long transactionId, UpdateDescriptionRequest updateDescriptionRequest) {
+        LOG.info("Attempting to update description for transaction with ID: {}", transactionId);
+
         Optional<Transaction> transactionOptional = transactionRepository.findById(transactionId);
         if (transactionOptional.isEmpty()) {
-            throw new RuntimeException("Transaction not found with id: " + transactionId);
+            LOG.error("Transaction not found with ID: {}", transactionId);
+            throw new ResourceNotFoundException("Transaction not found with id: " + transactionId);
         }
 
         Transaction transaction = transactionOptional.get();
         transaction.setDescription(updateDescriptionRequest.getDescription());
 
         try {
-            transactionRepository.saveAndFlush(transaction);
+            Transaction updatedTransaction = transactionRepository.saveAndFlush(transaction);
+            LOG.info("Successfully updated description for transaction with ID: {}", transactionId);
+            return updatedTransaction;
         } catch (OptimisticLockException ex) {
-            throw new RuntimeException("Update failed due to concurrent modification", ex);
+            LOG.error("Update failed due to concurrent modification for transaction with ID: {}", transactionId, ex);
+            throw new ConcurrentModificationException("Update failed due to concurrent modification", ex);
+        } catch (Exception ex) {
+            LOG.error("An unexpected error occurred while updating the transaction with ID: {}", transactionId, ex);
+            throw new RuntimeException("An unexpected error occurred", ex);
         }
-
-        return transaction;
     }
 }

@@ -2,6 +2,8 @@ package com.nyanmyohtet.springbatch.api.rest;
 
 import com.nyanmyohtet.springbatch.api.rest.request.UpdateDescriptionRequest;
 import com.nyanmyohtet.springbatch.api.rest.response.SearchTransactionResponse;
+import com.nyanmyohtet.springbatch.exception.ResourceNotFoundException;
+import com.nyanmyohtet.springbatch.persistence.model.Transaction;
 import com.nyanmyohtet.springbatch.service.TransactionService;
 import com.nyanmyohtet.springbatch.util.AppConstants;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ConcurrentModificationException;
 
 @RequiredArgsConstructor
 @RestController
@@ -42,15 +46,34 @@ public class TransactionRestController {
 
             return new ResponseEntity<>(response, HttpStatus.OK);
 
-        } catch (Exception e) {
-            LOG.error("Error occurred while searching transactions", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception ex) {
+            String message = "Error occurred while searching transactions";
+            LOG.error(message, ex);
+            throw new RuntimeException(message);
         }
     }
 
     @PatchMapping("/{transactionId}")
-    public ResponseEntity<?> updateDescription(@PathVariable Long transactionId, @RequestBody UpdateDescriptionRequest updateDescriptionRequest) {
-        LOG.info("updateDescription: with transactionId: {} and requestBody: {}", transactionId, updateDescriptionRequest);
-        return new ResponseEntity<>(transactionService.updateDescription(transactionId, updateDescriptionRequest), HttpStatus.OK);
+    public ResponseEntity<?> updateDescription(
+            @PathVariable Long transactionId,
+            @RequestBody UpdateDescriptionRequest updateDescriptionRequest) {
+
+        LOG.info("Attempting to update description for transaction with ID: {} and requestBody: {}", transactionId, updateDescriptionRequest);
+
+        try {
+            Transaction updatedTransaction = transactionService.updateDescription(transactionId, updateDescriptionRequest);
+            LOG.info("Successfully updated description for transaction with ID: {}", transactionId);
+            return ResponseEntity.ok(updatedTransaction);
+        } catch (ResourceNotFoundException ex) {
+            LOG.error("Transaction not found with ID: {}", transactionId, ex);
+            throw ex;
+        } catch (ConcurrentModificationException ex) {
+            LOG.error("Concurrent modification error for transaction with ID: {}", transactionId, ex);
+            throw ex;
+        } catch (Exception ex) {
+            String message = "An unexpected error occurred while updating the transaction with ID: " + transactionId;
+            LOG.error(message, ex);
+            throw new RuntimeException(message);
+        }
     }
 }
