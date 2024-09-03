@@ -1,6 +1,5 @@
 package com.nyanmyohtet.springbatch.service.impl;
 
-import com.nyanmyohtet.springbatch.api.rest.TransactionRestController;
 import com.nyanmyohtet.springbatch.api.rest.request.UpdateDescriptionRequest;
 import com.nyanmyohtet.springbatch.api.rest.response.SearchTransactionResponse;
 import com.nyanmyohtet.springbatch.exception.ResourceNotFoundException;
@@ -22,52 +21,50 @@ import javax.persistence.OptimisticLockException;
 import javax.transaction.Transactional;
 import java.util.ConcurrentModificationException;
 import java.util.List;
-import java.util.Optional;
 
 @RequiredArgsConstructor
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
-    private static final Logger LOG = LogManager.getLogger(TransactionRestController.class);
+    private static final Logger LOG = LogManager.getLogger(TransactionServiceImpl.class);
 
     private final TransactionRepository transactionRepository;
 
     @Override
     public SearchTransactionResponse searchTransaction(String customerId, String accountNumber, String description,
                                                        int pageNo, int pageSize, String sortBy, String sortDir) {
-        try {
-            Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
-                    : Sort.by(sortBy).descending();
+        LOG.debug("Searching transactions with params - customerId: {}, accountNumber: {}, description: {}, pageNo: {}, pageSize: {}, sortBy: {}, sortDir: {}",
+                customerId, accountNumber, description, pageNo, pageSize, sortBy, sortDir);
 
-            Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
+        Sort sort = Sort.by(Sort.Direction.fromOptionalString(sortDir).orElse(Sort.Direction.ASC), sortBy);
+        Pageable pageable = PageRequest.of(pageNo, pageSize, sort);
 
-            Specification<Transaction> spec = Specification.where(null);
+        Specification<Transaction> spec = Specification.where(null);
 
-            if (StringUtils.hasText(customerId)) {
-                spec = spec.and((root, query, cb) -> cb.equal(root.get("customerId"), customerId));
-            }
-            if (StringUtils.hasText(accountNumber)) {
-                spec = spec.and((root, query, cb) -> cb.equal(root.get("accountNumber"), accountNumber));
-            }
-            if (StringUtils.hasText(description)) {
-                spec = spec.and((root, query, cb) -> cb.like(root.get("description"), "%" + description + "%"));
-            }
-
-            Page<Transaction> transactionsPage = transactionRepository.findAll(spec, pageable);
-            List<Transaction> transactions = transactionsPage.getContent();
-
-            return new SearchTransactionResponse(
-                    transactions,
-                    transactionsPage.getNumber(),
-                    transactionsPage.getSize(),
-                    transactionsPage.getTotalElements(),
-                    transactionsPage.getTotalPages(),
-                    transactionsPage.isLast()
-            );
-        } catch (Exception e) {
-            LOG.error("Error occurred while searching for transactions", e);
-            throw new RuntimeException("Failed to search transactions", e);
+        if (StringUtils.hasText(customerId)) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("customerId"), customerId));
         }
+        if (StringUtils.hasText(accountNumber)) {
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("accountNumber"), accountNumber));
+        }
+        if (StringUtils.hasText(description)) {
+            spec = spec.and((root, query, cb) -> cb.like(cb.lower(root.get("description")), "%" + description.toLowerCase() + "%"));
+        }
+
+        Page<Transaction> transactionsPage = transactionRepository.findAll(spec, pageable);
+        List<Transaction> transactions = transactionsPage.getContent();
+
+        LOG.debug("Search results - totalElements: {}, totalPages: {}, currentPage: {}, pageSize: {}, isLast: {}",
+                transactionsPage.getTotalElements(), transactionsPage.getTotalPages(), transactionsPage.getNumber(), transactionsPage.getSize(), transactionsPage.isLast());
+
+        return new SearchTransactionResponse(
+                transactions,
+                transactionsPage.getNumber(),
+                transactionsPage.getSize(),
+                transactionsPage.getTotalElements(),
+                transactionsPage.getTotalPages(),
+                transactionsPage.isLast()
+        );
     }
 
     @Override
@@ -75,13 +72,12 @@ public class TransactionServiceImpl implements TransactionService {
     public Transaction updateDescription(Long transactionId, UpdateDescriptionRequest updateDescriptionRequest) {
         LOG.info("Attempting to update description for transaction with ID: {}", transactionId);
 
-        Optional<Transaction> transactionOptional = transactionRepository.findById(transactionId);
-        if (transactionOptional.isEmpty()) {
-            LOG.error("Transaction not found with ID: {}", transactionId);
-            throw new ResourceNotFoundException("Transaction not found with id: " + transactionId);
-        }
+        Transaction transaction = transactionRepository.findById(transactionId)
+                .orElseThrow(() -> {
+                    LOG.error("Transaction not found with ID: {}", transactionId);
+                    return new ResourceNotFoundException("Transaction not found with id: " + transactionId);
+                });
 
-        Transaction transaction = transactionOptional.get();
         transaction.setDescription(updateDescriptionRequest.getDescription());
 
         try {
