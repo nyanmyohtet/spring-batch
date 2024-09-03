@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface TransactionService {
     List<Transaction> searchTransaction();
-    Transaction updateDescription(UpdateDescriptionRequest updateDescriptionRequest);
+    Transaction updateDescription(Long transactionId, UpdateDescriptionRequest updateDescriptionRequest);
 }

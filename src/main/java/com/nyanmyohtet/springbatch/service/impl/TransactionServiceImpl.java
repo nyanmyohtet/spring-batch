@@ -25,10 +25,10 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     @Transactional
-    public Transaction updateDescription(UpdateDescriptionRequest updateDescriptionRequest) {
-        Optional<Transaction> transactionOptional = transactionRepository.findById(updateDescriptionRequest.getId());
+    public Transaction updateDescription(Long transactionId, UpdateDescriptionRequest updateDescriptionRequest) {
+        Optional<Transaction> transactionOptional = transactionRepository.findById(transactionId);
         if (transactionOptional.isEmpty()) {
-            throw new RuntimeException("Transaction not found with id: " + updateDescriptionRequest.getId());
+            throw new RuntimeException("Transaction not found with id: " + transactionId);
         }
 
         Transaction transaction = transactionOptional.get();

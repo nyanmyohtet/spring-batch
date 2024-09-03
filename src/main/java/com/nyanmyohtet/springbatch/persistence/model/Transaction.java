@@ -1,5 +1,6 @@
 package com.nyanmyohtet.springbatch.persistence.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -23,5 +24,6 @@ public class Transaction {
     private LocalTime trxTime;
     private String customerId;
     @Version
+    @JsonIgnore
     private Integer version;
 }

@@ -30,9 +30,9 @@ public class TransactionRestController {
         return new ResponseEntity<>(transactionService.searchTransaction(), HttpStatus.OK);
     }
 
-    @PatchMapping
-    public ResponseEntity<?> updateDescription(@RequestBody UpdateDescriptionRequest updateDescriptionRequest) {
-        LOG.info("updateDescription: with requestBody: {}", updateDescriptionRequest);
-        return new ResponseEntity<>(transactionService.updateDescription(updateDescriptionRequest), HttpStatus.OK);
+    @PatchMapping("/{transactionId}")
+    public ResponseEntity<?> updateDescription(@PathVariable Long transactionId, @RequestBody UpdateDescriptionRequest updateDescriptionRequest) {
+        LOG.info("updateDescription: with transactionId: {} and requestBody: {}", transactionId, updateDescriptionRequest);
+        return new ResponseEntity<>(transactionService.updateDescription(transactionId, updateDescriptionRequest), HttpStatus.OK);
     }
 }
