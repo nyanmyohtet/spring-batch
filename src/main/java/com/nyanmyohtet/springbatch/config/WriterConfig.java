@@ -13,12 +13,9 @@ public class WriterConfig {
 
     @Bean
     public ItemWriter<Transaction> writer(JpaRepository<Transaction, Long> repository) {
-        return new ItemWriter<>() {
-            @Override
-            public void write(List<? extends Transaction> items) {
-                items.forEach(System.out::println);
-                repository.saveAll(items);
-            }
+        return items -> {
+            items.forEach(System.out::println);
+            repository.saveAll(items);
         };
     }
 }

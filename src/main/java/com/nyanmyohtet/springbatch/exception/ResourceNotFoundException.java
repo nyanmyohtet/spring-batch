@@ -1,8 +1,11 @@
 package com.nyanmyohtet.springbatch.exception;
 
+import java.io.Serial;
+
 public class ResourceNotFoundException extends RuntimeException {
 
-    private static final long serialVersionUID = 1L;
+    @Serial
+    private static final long serialVersionUID = 1238462578349834273L;
 
     public ResourceNotFoundException(String message) {
         super(message);
