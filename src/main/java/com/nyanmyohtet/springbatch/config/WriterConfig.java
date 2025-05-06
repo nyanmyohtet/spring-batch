@@ -14,7 +14,9 @@ public class WriterConfig {
     @Bean
     public ItemWriter<Transaction> writer(JpaRepository<Transaction, Long> repository) {
         return items -> {
-            items.forEach(System.out::println);
+            items.stream()
+                    .map(Transaction::getAccountNumber)
+                    .forEach(item -> System.out.print(item + ", "));
             repository.saveAll(items);
         };
     }
