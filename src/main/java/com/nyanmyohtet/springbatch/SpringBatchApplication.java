@@ -1,5 +1,6 @@
 package com.nyanmyohtet.springbatch;
 
+import com.nyanmyohtet.springbatch.util.CsvFileReader;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -13,6 +14,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class SpringBatchApplication implements CommandLineRunner {
 
 	@Autowired
+	CsvFileReader fileReader;
+
+	@Autowired
 	private JobLauncher jobLauncher;
 
 	@Autowired
@@ -24,6 +28,8 @@ public class SpringBatchApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
+		fileReader.readFile();
+
 		JobParameters params = new JobParametersBuilder()
 				.addLong("run.id", System.currentTimeMillis())
 				.toJobParameters();
